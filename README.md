@@ -14,7 +14,8 @@ Utilise par le Studio Video (chaine LE CORPS HUMAIN SANS FILTRE).
 | `Dockerfile` | Image construite par RunPod depuis ce depot |
 | `start.sh` | Demarrage : modeles -> ComfyUI -> handler |
 | `download_models.py` + `models_manifest.json` | Telechargement des modeles manquants depuis Hugging Face |
-| `stage_models.py` | Copie les modeles du volume vers le disque local (lecture rapide) et configure ComfyUI |
+| `fetch_models_local.py` | Voie principale : telecharge les modeles depuis Hugging Face directement sur le disque local (hf_xet, 3 en parallele) |
+| `stage_models.py` | Secours : copie les modeles du volume vers le disque local et configure ComfyUI |
 | `extra_model_paths.yaml` | Fait lire a ComfyUI les modeles du volume |
 | `handler.py` | Recoit la requete, remplit le workflow, renvoie la video |
 | `workflow_patch.py` | Remplissage du workflow (teste dans `tests/`) |

@@ -5,14 +5,16 @@ set -euo pipefail
 MODELS_DIR="${MODELS_DIR:-/runpod-volume/models}"
 export MODELS_DIR
 
-echo "[start] Verification des modeles dans ${MODELS_DIR}"
-# Un echec de telechargement ne doit pas faire redemarrer le worker en boucle
-# (ce qui couterait du GPU pour rien) : on continue, et la requete "health"
-# indiquera les modeles manquants.
-python /app/download_models.py || echo "[start] ATTENTION : modeles incomplets, voir les logs ci-dessus."
-
-# Copie des modeles sur le disque local (bien plus rapide a lire que le volume).
-python /app/stage_models.py || echo "[start] ATTENTION : copie locale impossible, lecture depuis le volume."
+# 1) Voie rapide : telechargement direct depuis Hugging Face vers le disque local.
+# 2) Secours : modeles du volume RunPod (telechargement si absents), puis copie locale.
+if [ "${MODEL_SOURCE:-huggingface}" = "huggingface" ] && python /app/fetch_models_local.py; then
+  echo "[start] Modeles prets sur le disque local (Hugging Face)."
+else
+  echo "[start] Verification des modeles dans ${MODELS_DIR}"
+  # Un echec ne doit pas faire redemarrer le worker en boucle (GPU facture pour rien).
+  python /app/download_models.py || echo "[start] ATTENTION : modeles incomplets, voir les logs ci-dessus."
+  python /app/stage_models.py || echo "[start] ATTENTION : copie locale impossible, lecture depuis le volume."
+fi
 
 echo "[start] Demarrage de ComfyUI"
 python /comfyui/main.py \

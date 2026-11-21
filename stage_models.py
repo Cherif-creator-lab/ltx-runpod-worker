@@ -47,7 +47,8 @@ def model_files(root: Path) -> list[Path]:
                   if ".download_tmp" not in p.parts and p.is_file())
 
 
-THREADS = int(os.environ.get("STAGE_THREADS", "16"))
+# Mesure du 21/11 : 16 lectures paralleles = 41 Mo/s, 1 lecture = 66 Mo/s.
+THREADS = int(os.environ.get("STAGE_THREADS", "1"))
 
 
 def copy_file(src: Path, dst: Path) -> float:

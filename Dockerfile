@@ -34,7 +34,7 @@ COPY requirements.txt /app/requirements.txt
 RUN pip install -r /app/requirements.txt
 
 COPY extra_model_paths.yaml /comfyui/extra_model_paths.yaml
-COPY models_manifest.json download_models.py stage_models.py handler.py workflow_patch.py start.sh /app/
+COPY models_manifest.json download_models.py stage_models.py fetch_models_local.py handler.py workflow_patch.py start.sh /app/
 COPY workflows /app/workflows
 
 RUN chmod +x /app/start.sh

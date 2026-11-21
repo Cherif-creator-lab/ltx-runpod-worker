@@ -1,4 +1,4 @@
 runpod>=1.7.0
 requests>=2.31
-huggingface_hub>=0.24
+huggingface_hub[hf_xet]>=0.32
 boto3>=1.34

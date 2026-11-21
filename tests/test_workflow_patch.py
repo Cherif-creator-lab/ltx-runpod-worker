@@ -19,6 +19,7 @@ from workflow_patch import (  # noqa: E402
 )
 
 I2V = ROOT / "workflows" / "ltx25_i2v_api.json"
+FLF2V = ROOT / "workflows" / "ltx25_flf2v_api.json"
 
 
 def params(**overrides):
@@ -87,6 +88,31 @@ class TestOfficialI2VWorkflow(unittest.TestCase):
         before = json.dumps(self.wf, sort_keys=True)
         patch_workflow(self.wf, params())
         self.assertEqual(before, json.dumps(self.wf, sort_keys=True))
+
+
+class TestOfficialFLF2VWorkflow(unittest.TestCase):
+    """Teste le vrai workflow image de depart + image de fin."""
+
+    def setUp(self):
+        self.wf = json.loads(FLF2V.read_text(encoding="utf-8"))
+
+    def test_titles_present_once(self):
+        for title in ("INPUT_PROMPT", "INPUT_NEGATIVE", "INPUT_IMAGE", "INPUT_END_IMAGE",
+                      "INPUT_WIDTH", "INPUT_HEIGHT", "INPUT_SECONDS", "INPUT_FPS",
+                      "INPUT_SEED", "OUTPUT_VIDEO"):
+            self.assertEqual(len(nodes_titled(self.wf, title)), 1, title)
+
+    def test_patch_sets_the_right_nodes(self):
+        out, _ = patch_workflow(self.wf, params(end_image_name="end.png", seconds=8))
+        self.assertEqual(out["251:252"]["inputs"]["value"], "a mite walks")
+        self.assertEqual(out["31"]["inputs"]["image"], "start.png")
+        self.assertEqual(out["39"]["inputs"]["image"], "end.png")
+        self.assertEqual(out["251:215"]["inputs"]["value"], 704)
+        self.assertEqual(out["251:216"]["inputs"]["value"], 1280)
+        self.assertEqual(out["251:198"]["inputs"]["value"], 8)
+        self.assertEqual(out["251:196"]["inputs"]["noise_seed"], 42)
+        self.assertNotEqual(out["251:217"]["inputs"]["text"], "a mite walks")
+        self.assertEqual(out["251:222"]["inputs"]["text"], ["251:248", 0])
 
 
 class TestErrors(unittest.TestCase):

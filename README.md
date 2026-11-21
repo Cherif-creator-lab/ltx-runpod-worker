@@ -17,7 +17,7 @@ Utilise par le Studio Video (chaine LE CORPS HUMAIN SANS FILTRE).
 | `extra_model_paths.yaml` | Fait lire a ComfyUI les modeles du volume |
 | `handler.py` | Recoit la requete, remplit le workflow, renvoie la video |
 | `workflow_patch.py` | Remplissage du workflow (teste dans `tests/`) |
-| `workflows/` | Workflow officiel LTX-2.5 I2V (pret). FLF2V (image de fin) a ajouter, voir `workflows/README.md` |
+| `workflows/` | Workflows officiels LTX-2.5 I2V et FLF2V (prets), voir `workflows/README.md` |
 | `test_input.json` | Requete de test a coller dans l'onglet Requests de RunPod |
 | `scripts/call_endpoint.py` | Exemple d'appel depuis le Studio Video ou ton PC |
 
@@ -25,7 +25,7 @@ Utilise par le Studio Video (chaine LE CORPS HUMAIN SANS FILTRE).
 
 1. **Hugging Face** : accepter les conditions de `Lightricks/LTX-2.5`. Creer une cle *Read*.
 2. **RunPod > Secrets** : secret `hf_token` = la cle Hugging Face.
-3. **Workflows** : `ltx25_i2v_api.json` est deja inclus. `ltx25_flf2v_api.json` (image de fin) reste a ajouter.
+3. **Workflows** : `ltx25_i2v_api.json` et `ltx25_flf2v_api.json` sont deja inclus.
 4. **RunPod > Serverless > New Endpoint > Deploy from a GitHub repository** : ce depot, branche `main`.
 5. Reglages de l'endpoint :
 

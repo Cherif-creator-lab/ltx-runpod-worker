@@ -1,21 +1,24 @@
 # Workflows ComfyUI (format API)
 
-Deposer ici les deux fichiers exportes depuis ComfyUI :
+| Fichier | Etat | Usage |
+| --- | --- | --- |
+| `ltx25_i2v_api.json` | pret | image de depart -> video (modele officiel ComfyUI "LTX-2.5 I2V") |
+| `ltx25_flf2v_api.json` | a ajouter | image de depart + image de fin -> video ("LTX-2.5 FLF2V") |
 
-- `ltx25_i2v_api.json` : modele de ComfyUI **LTX-2.5 I2V** (image de depart)
-- `ltx25_flf2v_api.json` : modele de ComfyUI **LTX-2.5 FLF2V** (image de depart + image de fin)
+Les titres de controle sont poses directement dans le JSON (`_meta.title`) :
 
-## Comment les obtenir
+| Titre | Noeud dans ltx25_i2v_api.json | Champ |
+| --- | --- | --- |
+| INPUT_PROMPT | 398:376 Prompt | value |
+| INPUT_NEGATIVE | 398:373 CLIP Text Encode | text |
+| INPUT_IMAGE | 395 Load First Frame | image |
+| INPUT_WIDTH | 398:372 Width | value |
+| INPUT_HEIGHT | 398:360 Height | value |
+| INPUT_SECONDS | 398:362 Duration | value |
+| INPUT_FPS | 398:361 Frame Rate | value |
+| INPUT_SEED | 398:339 RandomNoise (1re passe) | noise_seed |
+| OUTPUT_VIDEO | 75 Save Video | - |
 
-1. Ouvrir ComfyUI (a jour) : Workflow > Browse Templates > Video > LTX-2.5 I2V.
-2. Renommer les noeuds (clic droit > Title) :
-   - texte positif -> `INPUT_PROMPT`
-   - texte negatif -> `INPUT_NEGATIVE` (optionnel)
-   - Load Image -> `INPUT_IMAGE` (et `INPUT_END_IMAGE` pour l'image de fin dans FLF2V)
-   - noeud qui porte width / height / length -> `INPUT_SIZE`
-   - noeud qui porte le seed -> `INPUT_SEED`
-   - noeud de sauvegarde video -> `OUTPUT_VIDEO`
-3. Workflow > **Export (API)**. Ne pas utiliser l'export normal : le worker refuse le format interface.
-
-Sans ces titres, le worker essaie de deviner les noeuds, mais les titres rendent le
-resultat fiable.
+Pour ajouter un nouveau workflow : l'exporter depuis ComfyUI avec File > Export (API),
+puis poser ces titres sur les noeuds correspondants (dans ComfyUI ou directement dans le JSON).
+L'ameliorateur de prompt du workflow officiel reste desactive (noeud 398:383 = false).

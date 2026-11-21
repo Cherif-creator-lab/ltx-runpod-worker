@@ -17,7 +17,7 @@ Utilise par le Studio Video (chaine LE CORPS HUMAIN SANS FILTRE).
 | `extra_model_paths.yaml` | Fait lire a ComfyUI les modeles du volume |
 | `handler.py` | Recoit la requete, remplit le workflow, renvoie la video |
 | `workflow_patch.py` | Remplissage du workflow (teste dans `tests/`) |
-| `workflows/` | **A completer** : les 2 workflows exportes en format API (voir `workflows/README.md`) |
+| `workflows/` | Workflow officiel LTX-2.5 I2V (pret). FLF2V (image de fin) a ajouter, voir `workflows/README.md` |
 | `test_input.json` | Requete de test a coller dans l'onglet Requests de RunPod |
 | `scripts/call_endpoint.py` | Exemple d'appel depuis le Studio Video ou ton PC |
 
@@ -25,7 +25,7 @@ Utilise par le Studio Video (chaine LE CORPS HUMAIN SANS FILTRE).
 
 1. **Hugging Face** : accepter les conditions de `Lightricks/LTX-2.5`. Creer une cle *Read*.
 2. **RunPod > Secrets** : secret `hf_token` = la cle Hugging Face.
-3. **Workflows** : exporter `ltx25_i2v_api.json` et `ltx25_flf2v_api.json` dans `workflows/`, puis pousser.
+3. **Workflows** : `ltx25_i2v_api.json` est deja inclus. `ltx25_flf2v_api.json` (image de fin) reste a ajouter.
 4. **RunPod > Serverless > New Endpoint > Deploy from a GitHub repository** : ce depot, branche `main`.
 5. Reglages de l'endpoint :
 
@@ -55,8 +55,14 @@ Requete :
 {"input": {
   "image": "<base64>", "end_image": "<base64, optionnel>",
   "prompt": "...", "negative_prompt": "optionnel",
-  "seconds": 6, "width": 720, "height": 1280, "fps": 24, "seed": 42
+  "seconds": 6, "width": 704, "height": 1280, "fps": 24, "seed": 42
 }}
+```
+
+- `seconds` : entier (1 a 20). Images produites = seconds x fps + 1.
+- `width` / `height` : arrondis au multiple de 64 (le workflow genere en demi-resolution puis agrandit x2). 1080p vertical = 1088 x 1920.
+
+```text
 ```
 
 `image_url` / `end_image_url` sont acceptes a la place du base64.
@@ -64,7 +70,7 @@ Requete :
 Reponse :
 
 ```json
-{"video_base64": "...", "seconds": 6.0, "frames": 145, "width": 736, "height": 1280,
+{"video_base64": "...", "seconds": 6, "frames": 145, "width": 704, "height": 1280,
  "fps": 24, "seed": 42, "generation_time_s": 95.3, "size_mb": 4.2}
 ```
 

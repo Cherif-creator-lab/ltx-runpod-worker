@@ -6,7 +6,7 @@ Entree attendue (champ "input" de la requete RunPod) :
   "end_image": "<base64>"              (optionnel, ou "end_image_url")
   "prompt": "<texte>",
   "negative_prompt": "<texte>",        (optionnel)
-  "seconds": 6, "width": 720, "height": 1280, "fps": 24, "seed": 12345
+  "seconds": 6 (entier), "width": 704, "height": 1280, "fps": 24, "seed": 12345
 }
 Requete de sante : {"input": {"action": "health"}}
 
@@ -32,7 +32,8 @@ from workflow_patch import (
     JobParams,
     WorkflowError,
     find_video_outputs,
-    frames_for_seconds,
+    frame_count,
+    nodes_titled,
     patch_workflow,
     round_to_multiple,
 )
@@ -228,11 +229,12 @@ def handler(job: dict) -> dict:
             raise WorkflowError("Le champ 'image' (ou 'image_url') est obligatoire.")
         end_image = fetch_image(job_input, "end_image")
 
-        seconds = number(job_input, "seconds", 6)
+        # Le workflow LTX-2.5 prend une duree en secondes entieres.
+        seconds = int(round(number(job_input, "seconds", 6)))
         fps = int(number(job_input, "fps", 24))
-        width = round_to_multiple(int(number(job_input, "width", 720)), 32, 256)
-        height = round_to_multiple(int(number(job_input, "height", 1280)), 32, 256)
-        frames = frames_for_seconds(seconds, fps)
+        width = round_to_multiple(int(number(job_input, "width", 704)))
+        height = round_to_multiple(int(number(job_input, "height", 1280)))
+        frames = frame_count(seconds, fps)
         seed = int(job_input.get("seed", random.randint(0, 2**31 - 1)))
 
         workflow_path = FLF2V_WORKFLOW if end_image else I2V_WORKFLOW
@@ -255,7 +257,7 @@ def handler(job: dict) -> dict:
             end_image_name=end_name,
             width=width,
             height=height,
-            length=frames,
+            seconds=seconds,
             fps=fps,
             seed=seed,
         )
@@ -265,9 +267,7 @@ def handler(job: dict) -> dict:
         prompt_id = queue_prompt(patched)
         entry = wait_for_result(prompt_id, job)
 
-        output_ids = [nid for nid, node in patched.items()
-                      if str(node.get("_meta", {}).get("title", "")).upper() == "OUTPUT_VIDEO"]
-        videos = find_video_outputs(entry, output_ids)
+        videos = find_video_outputs(entry, nodes_titled(patched, "OUTPUT_VIDEO"))
         if not videos:
             raise RuntimeError("Aucune video trouvee dans le resultat de ComfyUI.")
         video_item = videos[0]
@@ -275,7 +275,7 @@ def handler(job: dict) -> dict:
         temp_files.append(COMFY_OUTPUT_DIR / video_item.get("subfolder", "") / video_item["filename"])
 
         result = {
-            "seconds": round((frames - 1) / fps, 2),
+            "seconds": seconds,
             "frames": frames,
             "width": width,
             "height": height,

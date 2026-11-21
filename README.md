@@ -62,9 +62,6 @@ Requete :
 - `seconds` : entier (1 a 20). Images produites = seconds x fps + 1.
 - `width` / `height` : arrondis au multiple de 64 (le workflow genere en demi-resolution puis agrandit x2). 1080p vertical = 1088 x 1920.
 
-```text
-```
-
 `image_url` / `end_image_url` sont acceptes a la place du base64.
 
 Reponse :

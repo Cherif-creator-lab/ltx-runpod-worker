@@ -14,6 +14,7 @@ Utilise par le Studio Video (chaine LE CORPS HUMAIN SANS FILTRE).
 | `Dockerfile` | Image construite par RunPod depuis ce depot |
 | `start.sh` | Demarrage : modeles -> ComfyUI -> handler |
 | `download_models.py` + `models_manifest.json` | Telechargement des modeles manquants depuis Hugging Face |
+| `stage_models.py` | Copie les modeles du volume vers le disque local (lecture rapide) et configure ComfyUI |
 | `extra_model_paths.yaml` | Fait lire a ComfyUI les modeles du volume |
 | `handler.py` | Recoit la requete, remplit le workflow, renvoie la video |
 | `workflow_patch.py` | Remplissage du workflow (teste dans `tests/`) |
@@ -31,14 +32,14 @@ Utilise par le Studio Video (chaine LE CORPS HUMAIN SANS FILTRE).
 
 | Reglage | Valeur |
 | --- | --- |
-| Container disk | 30 GB |
+| Container disk | 80 GB (copie locale des modeles, ~45 Go) |
 | Variable `HUGGINGFACE_ACCESS_TOKEN` | `{{ RUNPOD_SECRET_hf_token }}` |
 | Type | Queue |
 | GPU | 48 GB |
 | Max workers / Active workers | 1 / 0 |
 | Idle timeout | 60 s |
 | Initialization timeout | 3600 s (premier telechargement des modeles) |
-| Execution timeout | 900 s |
+| Execution timeout | 1800 s |
 | FlashBoot | active |
 | Data centers | tous |
 | Global volume | `ltx-global` |

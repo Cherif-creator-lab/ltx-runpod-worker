@@ -40,7 +40,7 @@ from workflow_patch import (
 
 COMFY_URL = os.environ.get("COMFY_URL", "http://127.0.0.1:8188")
 COMFY_START_TIMEOUT = int(os.environ.get("COMFY_START_TIMEOUT", "900"))
-JOB_TIMEOUT = int(os.environ.get("JOB_TIMEOUT", "840"))
+JOB_TIMEOUT = int(os.environ.get("JOB_TIMEOUT", "1740"))
 WORKFLOW_DIR = Path(os.environ.get("WORKFLOW_DIR", Path(__file__).with_name("workflows")))
 I2V_WORKFLOW = WORKFLOW_DIR / "ltx25_i2v_api.json"
 FLF2V_WORKFLOW = WORKFLOW_DIR / "ltx25_flf2v_api.json"
@@ -202,10 +202,14 @@ def upload_to_s3(data: bytes, key: str) -> str:
 
 def health() -> dict:
     models_root = Path(os.environ.get("MODELS_DIR", "/runpod-volume/models"))
-    models = sorted(str(p.relative_to(models_root)) for p in models_root.rglob("*.safetensors")) \
-        if models_root.exists() else []
+    models = sorted(str(p.relative_to(models_root)) for p in models_root.rglob("*.safetensors")
+                    if ".download_tmp" not in p.parts) if models_root.exists() else []
+    local_root = Path(os.environ.get("LOCAL_MODELS_DIR", "/models-local"))
+    local = sorted(str(p.relative_to(local_root)) for p in local_root.rglob("*.safetensors")) \
+        if local_root.exists() else []
     return {
         "status": "ok",
+        "local_models": local,
         "workflows": {"i2v": I2V_WORKFLOW.exists(), "flf2v": FLF2V_WORKFLOW.exists()},
         "models": models,
         "storage": "s3" if s3_configured() else "base64",

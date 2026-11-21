@@ -11,6 +11,9 @@ echo "[start] Verification des modeles dans ${MODELS_DIR}"
 # indiquera les modeles manquants.
 python /app/download_models.py || echo "[start] ATTENTION : modeles incomplets, voir les logs ci-dessus."
 
+# Copie des modeles sur le disque local (bien plus rapide a lire que le volume).
+python /app/stage_models.py || echo "[start] ATTENTION : copie locale impossible, lecture depuis le volume."
+
 echo "[start] Demarrage de ComfyUI"
 python /comfyui/main.py \
   --listen 127.0.0.1 \

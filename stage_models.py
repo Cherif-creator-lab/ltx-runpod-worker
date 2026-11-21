@@ -21,6 +21,7 @@ import os
 import shutil
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 SUBDIRS = ("diffusion_models", "text_encoders", "vae", "latent_upscale_models",
@@ -46,16 +47,38 @@ def model_files(root: Path) -> list[Path]:
                   if ".download_tmp" not in p.parts and p.is_file())
 
 
+THREADS = int(os.environ.get("STAGE_THREADS", "16"))
+
+
 def copy_file(src: Path, dst: Path) -> float:
+    """Copie par morceaux lus en parallele : le volume reseau est limite par flux,
+    plusieurs lectures simultanees multiplient le debit."""
     dst.parent.mkdir(parents=True, exist_ok=True)
     tmp = dst.with_suffix(dst.suffix + ".part")
+    size = src.stat().st_size
     started = time.time()
-    with src.open("rb") as fin, tmp.open("wb") as fout:
-        while True:
-            block = fin.read(CHUNK)
-            if not block:
-                break
-            fout.write(block)
+    src_fd = os.open(src, os.O_RDONLY)
+    dst_fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o644)
+    try:
+        os.ftruncate(dst_fd, size)
+
+        def copy_range(offset: int) -> None:
+            end = min(offset + CHUNK, size)
+            position = offset
+            while position < end:
+                data = os.pread(src_fd, end - position, position)
+                if not data:
+                    raise OSError(f"Lecture interrompue dans {src} a {position}")
+                written = os.pwrite(dst_fd, data, position)
+                position += written
+
+        with ThreadPoolExecutor(max_workers=THREADS) as pool:
+            list(pool.map(copy_range, range(0, size, CHUNK)))
+    finally:
+        os.close(src_fd)
+        os.close(dst_fd)
+    if tmp.stat().st_size != size:
+        raise OSError(f"Taille incorrecte apres copie de {src}")
     tmp.replace(dst)
     return time.time() - started
 
